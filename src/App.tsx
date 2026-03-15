@@ -17,7 +17,9 @@ import {
   Upload,
   Settings,
   Eye,
-  EyeOff
+  EyeOff,
+  Moon,
+  Sun
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -42,8 +44,23 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [showOverlay, setShowOverlay] = useState(true);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return document.documentElement.classList.contains('dark') || 
+             window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  });
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
 
   useEffect(() => {
     // Detect if running inside an iframe
@@ -224,29 +241,35 @@ export default function App() {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className={`bg-white rounded-[2rem] shadow-2xl border border-stone-200 overflow-hidden flex flex-col transition-all duration-300 ${
+              className={`bg-white dark:bg-stone-900 rounded-[2rem] shadow-2xl border border-stone-200 dark:border-stone-700 overflow-hidden flex flex-col transition-all duration-300 ${
                 isMinimized ? 'w-72 h-16' : 'w-[90vw] max-w-4xl h-[85vh]'
               }`}
             >
               {/* Header */}
-              <div className="h-16 px-6 border-b border-stone-100 flex items-center justify-between bg-stone-50/50">
+              <div className="h-16 px-6 border-b border-stone-100 dark:border-stone-800 flex items-center justify-between bg-stone-50/50 dark:bg-stone-800/50">
                 <div className="flex items-center gap-3">
                   <div className="bg-emerald-600 p-1.5 rounded-lg">
                     <BookOpen className="w-4 h-4 text-white" />
                   </div>
-                  <span className="font-bold text-stone-800">HQ Bubble Translator</span>
+                  <span className="font-bold text-stone-800 dark:text-stone-100">HQ Bubble Translator</span>
                 </div>
                 
                 <div className="flex items-center gap-2">
                   <button 
+                    onClick={() => setIsDarkMode(!isDarkMode)}
+                    className="p-2 hover:bg-stone-200 dark:hover:bg-stone-700 rounded-full transition-colors text-stone-500 dark:text-stone-400"
+                  >
+                    {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                  </button>
+                  <button 
                     onClick={() => setIsMinimized(!isMinimized)}
-                    className="p-2 hover:bg-stone-200 rounded-full transition-colors text-stone-500"
+                    className="p-2 hover:bg-stone-200 dark:hover:bg-stone-700 rounded-full transition-colors text-stone-500 dark:text-stone-400"
                   >
                     {isMinimized ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
                   </button>
                   <button 
                     onClick={() => setIsOpen(false)}
-                    className="p-2 hover:bg-red-100 hover:text-red-600 rounded-full transition-colors text-stone-500"
+                    className="p-2 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400 rounded-full transition-colors text-stone-500 dark:text-stone-400"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -257,13 +280,13 @@ export default function App() {
                 <div className="flex-1 flex flex-col overflow-hidden">
                   {/* Iframe Warning Banner */}
                   {isInIframe && (
-                    <div className="bg-amber-50 border-b border-amber-100 px-4 py-2 flex items-center justify-between gap-4">
-                      <p className="text-[10px] text-amber-700 font-bold uppercase tracking-wider leading-tight">
+                    <div className="bg-amber-50 dark:bg-amber-900/30 border-b border-amber-100 dark:border-amber-800 px-4 py-2 flex items-center justify-between gap-4">
+                      <p className="text-[10px] text-amber-700 dark:text-amber-400 font-bold uppercase tracking-wider leading-tight">
                         Modo Preview: A captura de tela exige uma nova aba.
                       </p>
                       <button 
                         onClick={openInNewTab}
-                        className="text-[10px] bg-amber-600 text-white px-2 py-1 rounded font-bold hover:bg-amber-700 transition-colors whitespace-nowrap"
+                        className="text-[10px] bg-amber-600 dark:bg-amber-500 text-white px-2 py-1 rounded font-bold hover:bg-amber-700 dark:hover:bg-amber-600 transition-colors whitespace-nowrap"
                       >
                         ABRIR AGORA
                       </button>
@@ -271,11 +294,11 @@ export default function App() {
                   )}
 
                   {/* Toolbar */}
-                  <div className="p-4 border-b border-stone-100 flex items-center gap-3 bg-white">
+                  <div className="p-4 border-b border-stone-100 dark:border-stone-800 flex items-center gap-3 bg-white dark:bg-stone-900">
                     <button 
                       onClick={isInIframe ? openInNewTab : captureScreen}
                       className={`flex-1 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 ${
-                        isInIframe ? 'bg-amber-600 text-white hover:bg-amber-700' : 'bg-stone-900 text-white hover:bg-stone-800'
+                        isInIframe ? 'bg-amber-600 dark:bg-amber-500 text-white hover:bg-amber-700 dark:hover:bg-amber-600' : 'bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 hover:bg-stone-800 dark:hover:bg-white'
                       }`}
                     >
                       <Camera className="w-4 h-4" />
@@ -283,7 +306,7 @@ export default function App() {
                     </button>
                     <button 
                       onClick={() => fileInputRef.current?.click()}
-                      className="flex-1 py-2.5 bg-white border border-stone-200 text-stone-700 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-stone-50 transition-all active:scale-95"
+                      className="flex-1 py-2.5 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-stone-50 dark:hover:bg-stone-700 transition-all active:scale-95"
                     >
                       <Upload className="w-4 h-4" />
                       Upload
@@ -300,7 +323,7 @@ export default function App() {
                     {result && (
                       <button 
                         onClick={() => setShowOverlay(!showOverlay)}
-                        className={`p-2.5 rounded-xl transition-all ${showOverlay ? 'bg-emerald-100 text-emerald-700' : 'bg-stone-100 text-stone-500'}`}
+                        className={`p-2.5 rounded-xl transition-all ${showOverlay ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400' : 'bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400'}`}
                         title="Toggle Overlay"
                       >
                         {showOverlay ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
@@ -309,7 +332,7 @@ export default function App() {
                     {image && (
                       <button 
                         onClick={clearAll}
-                        className="p-2.5 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-all"
+                        className="p-2.5 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/50 transition-all"
                       >
                         <Trash2 className="w-5 h-5" />
                       </button>
@@ -317,7 +340,7 @@ export default function App() {
                   </div>
 
                   {/* Content Area */}
-                  <div className="flex-1 overflow-hidden relative bg-stone-100 flex items-center justify-center">
+                  <div className="flex-1 overflow-hidden relative bg-stone-100 dark:bg-stone-950 flex items-center justify-center">
                     <input 
                       type="file" 
                       ref={fileInputRef} 
@@ -328,24 +351,24 @@ export default function App() {
 
                     {!image && !isProcessing && (
                       <div className="text-center space-y-4 max-w-xs">
-                        <div className="w-20 h-20 bg-white rounded-3xl shadow-sm flex items-center justify-center mx-auto">
-                          <Languages className="w-10 h-10 text-emerald-600" />
+                        <div className="w-20 h-20 bg-white dark:bg-stone-800 rounded-3xl shadow-sm flex items-center justify-center mx-auto">
+                          <Languages className="w-10 h-10 text-emerald-600 dark:text-emerald-500" />
                         </div>
-                        <h3 className="text-lg font-bold text-stone-800">Pronto para traduzir</h3>
-                        <p className="text-sm text-stone-500">Capture qualquer site ou faça upload de uma imagem para ver a mágica acontecer.</p>
+                        <h3 className="text-lg font-bold text-stone-800 dark:text-stone-100">Pronto para traduzir</h3>
+                        <p className="text-sm text-stone-500 dark:text-stone-400">Capture qualquer site ou faça upload de uma imagem para ver a mágica acontecer.</p>
                       </div>
                     )}
 
                     {isProcessing && (
-                      <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-30 flex flex-col items-center justify-center gap-4">
-                        <Loader2 className="w-12 h-12 animate-spin text-emerald-600" />
-                        <p className="font-bold text-emerald-800 animate-pulse">Traduzindo conteúdo...</p>
+                      <div className="absolute inset-0 bg-white/80 dark:bg-stone-900/80 backdrop-blur-sm z-30 flex flex-col items-center justify-center gap-4">
+                        <Loader2 className="w-12 h-12 animate-spin text-emerald-600 dark:text-emerald-500" />
+                        <p className="font-bold text-emerald-800 dark:text-emerald-400 animate-pulse">Traduzindo conteúdo...</p>
                       </div>
                     )}
 
                     {image && (
                       <div className="relative w-full h-full flex items-center justify-center p-4 overflow-auto custom-scrollbar">
-                        <div className="relative inline-block shadow-2xl rounded-lg overflow-hidden bg-white">
+                        <div className="relative inline-block shadow-2xl rounded-lg overflow-hidden bg-white dark:bg-stone-800">
                           <img src={image} alt="Capture" className="max-w-none h-auto block" style={{ maxHeight: 'calc(85vh - 150px)' }} />
                           
                           {result && showOverlay && (
@@ -357,7 +380,7 @@ export default function App() {
                                     key={idx}
                                     initial={{ opacity: 0, scale: 0.8 }}
                                     animate={{ opacity: 1, scale: 1 }}
-                                    className="absolute bg-white/95 flex items-center justify-center text-center p-1 leading-tight overflow-hidden border border-emerald-500/30"
+                                    className="absolute bg-white/95 dark:bg-stone-800/95 flex items-center justify-center text-center p-1 leading-tight overflow-hidden border border-emerald-500/30 dark:border-emerald-500/50"
                                     style={{
                                       top: `${ymin / 10}%`,
                                       left: `${xmin / 10}%`,
@@ -369,7 +392,7 @@ export default function App() {
                                       zIndex: 10
                                     }}
                                   >
-                                    <span className="text-black font-bold leading-tight" style={{ fontFamily: '"Comic Neue", "Comic Sans MS", cursive, sans-serif' }}>
+                                    <span className="text-black dark:text-white font-bold leading-tight" style={{ fontFamily: '"Comic Neue", "Comic Sans MS", cursive, sans-serif' }}>
                                       {panel.translatedText}
                                     </span>
                                   </motion.div>
